@@ -1,0 +1,53 @@
+{
+  "site": {
+    "title": "Roue de jeu Astro",
+    "description": "Jeu de la roue"
+  },
+  "home": {
+    "title": "Bienvenue dans le jeu !"
+  },
+  "nav": {
+    "link1": "Lien 1",
+    "link2": "Lien 2",
+    "settings": "Paramètres",
+    "themes": "Thèmes",
+    "link3": "Lien 3",
+    "link4": "Lien 4"
+  },
+  "common": {
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "reset": "Réinitialiser",
+    "duplicate": "Dupliquer",
+    "delete": "Supprimer"
+  },
+  "themes": {
+    "title": "Choisir un thème"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "spinDuration": "Durée de rotation",
+    "wheelSoundVolume": "Volume de la roue",
+    "tadaSoundVolume": "Volume du son Tada"
+  },
+  "homebox": {
+    "title": "Entrées de la roue",
+    "quantity": "Quantité",
+    "placeholder": "Entrez le texte ici",
+    "editName": "Modifier le nom"
+  },
+  "wheel": {
+    "spin": "TOURNER"
+  },
+  "pages": {
+    "about": {
+      "title": "À propos"
+    },
+    "privacy": {
+      "title": "Politique de confidentialité"
+    },
+    "terms": {
+      "title": "Conditions d'utilisation"
+    }
+  }
+}

@@ -1,0 +1,235 @@
+---
+// Client-only auth buttons for Firebase Google Auth
+---
+
+<div class="auth-buttons">
+  <button id="google-signin" class="google-btn" type="button">
+    <span class="google-btn__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18">
+        <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.731 32.354 29.267 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.152 7.96 3.04l5.657-5.657C34.671 6.053 29.611 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z"/>
+        <path fill="#FF3D00" d="M6.306 14.691l6.571 4.817C14.655 16.108 18.961 12 24 12c3.059 0 5.842 1.152 7.96 3.04l5.657-5.657C34.671 6.053 29.611 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+        <path fill="#4CAF50" d="M24 44c5.177 0 9.86-1.977 13.409-5.197l-6.19-5.238C29.162 35.488 26.715 36 24 36c-5.242 0-9.72-3.658-11.289-8.609l-6.535 5.033C9.482 39.556 16.227 44 24 44z"/>
+        <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.356 3.354-4.72 6-11.303 6-5.242 0-9.72-3.658-11.289-8.609l-6.535 5.033C9.482 39.556 16.227 44 24 44c8.837 0 16-7.163 16-16 0-1.341-.138-2.651-.389-3.917z"/>
+      </svg>
+    </span>
+    <span class="google-btn__text">Continue with Google</span>
+  </button>
+  <button id="signout" class="signout-btn" type="button" hidden>Sign out</button>
+  <div class="divider"><span>or</span></div>
+  <form id="email-auth" class="email-auth" novalidate>
+    <div class="field">
+      <label for="auth-email">Email</label>
+      <input id="auth-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+    </div>
+    <div class="field">
+      <label for="auth-password">Password</label>
+      <input id="auth-password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" minlength="6" required />
+    </div>
+    <div class="actions">
+      <button id="email-signup" class="btn" type="button">Create account</button>
+      <button id="email-login" class="btn btn--primary" type="button">Log in</button>
+    </div>
+    <button id="email-reset" class="link" type="button">Forgot password?</button>
+  </form>
+  <p id="auth-error" class="auth-error" role="alert" aria-live="polite" hidden></p>
+</div>
+
+<style>
+  .google-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #ffffff;
+    color: #1f1f1f;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .google-btn:hover { background: #f5f5f5; }
+  .google-btn__icon { display: inline-flex; }
+  .signout-btn { margin-top: 12px; padding: 8px 12px; }
+  .auth-error { margin-top: 10px; color: #ff6b6b; font-size: 13px; }
+  .divider { display: grid; place-items: center; margin: 14px 0; color: #a9a9a9; font-size: 12px; }
+  .divider span { background: transparent; padding: 0 8px; position: relative; }
+  .divider::before { content: ""; display: block; height: 1px; background: #2c2c2c; width: 100%; grid-area: 1 / 1; }
+  .divider span { grid-area: 1 / 1; background: #1f1f1f; }
+  .email-auth { display: grid; gap: 10px; }
+  .field { display: grid; gap: 6px; }
+  .field label { color: #dcdcdc; font-size: 12px; }
+  .field input { background: #121212; color: #ffffff; border: 1px solid #333; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+  .field input:focus { outline: none; border-color: #555; }
+  .actions { display: flex; gap: 8px; }
+  .btn { background: #2a2a2a; color: #fff; border: 1px solid #3a3a3a; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  .btn:hover { background: #3a3a3a; }
+  .btn--primary { background: #f7b71e; color: #1a1a1a; border: 1px solid #f7b71e; font-weight: 700; }
+  .btn--primary:hover { filter: brightness(0.95); }
+  .link { background: transparent; border: none; color: #bdbdbd; text-decoration: underline; text-underline-offset: 3px; width: fit-content; padding: 0; cursor: pointer; font-size: 12px; }
+</style>
+
+<script>
+  import { getFirebaseClients } from '../lib/firebase';
+  import { signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+  import type { User } from 'firebase/auth';
+
+  const { auth, googleProvider } = getFirebaseClients();
+
+  const signInButton = document.getElementById('google-signin');
+  const signOutButton = document.getElementById('signout');
+  const errorEl = document.getElementById('auth-error');
+  const emailForm = document.getElementById('email-auth');
+  const emailInput = document.getElementById('auth-email');
+  const passwordInput = document.getElementById('auth-password');
+  const emailSignupBtn = document.getElementById('email-signup');
+  const emailLoginBtn = document.getElementById('email-login');
+  const emailResetBtn = document.getElementById('email-reset');
+
+  function updateButtons(user: User | null) {
+    if (user) {
+      signOutButton?.removeAttribute('hidden');
+      signInButton?.setAttribute('hidden', '');
+      emailForm?.setAttribute('hidden', '');
+    } else {
+      signInButton?.removeAttribute('hidden');
+      signOutButton?.setAttribute('hidden', '');
+      emailForm?.removeAttribute('hidden');
+    }
+  }
+
+  // Handle redirect-based Google sign-in result if we came back from a redirect
+  try {
+    getRedirectResult(auth).catch((err) => {
+      console.error('[Auth] Redirect sign-in failed', err);
+    });
+  } catch {}
+
+  onAuthStateChanged(auth, (user) => {
+    updateButtons(user);
+    try {
+      document.dispatchEvent(new CustomEvent('auth:state', { detail: { isSignedIn: !!user } }));
+    } catch {}
+    if (user && errorEl) {
+      errorEl.textContent = '';
+      errorEl.setAttribute('hidden', '');
+    }
+  });
+
+  signInButton?.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      console.error('[Auth] Sign-in failed', err);
+      let message = 'Sign-in failed. Please try again.';
+      const error = err as { code?: string };
+      const code = error && error.code ? String(error.code) : '';
+      if (code === 'auth/configuration-not-found' || code === 'auth/invalid-configuration' || code === 'auth/operation-not-supported-in-this-environment') {
+        // Fallback to redirect flow which is more tolerant in some environments/configs
+        try {
+          await signInWithRedirect(auth, googleProvider);
+          return;
+        } catch (redirectErr) {
+          console.error('[Auth] Redirect fallback failed', redirectErr);
+        }
+      }
+      if (code === 'auth/popup-blocked') message = 'Popup blocked. Allow popups for this site and retry.';
+      else if (code === 'auth/popup-closed-by-user') message = 'Popup closed before completing sign-in.';
+      else if (code === 'auth/unauthorized-domain') message = 'Unauthorized domain. Add localhost (and 127.0.0.1) in Firebase Auth domains.';
+      else if (code === 'auth/operation-not-allowed') message = 'Google provider disabled. Enable it in Firebase Auth → Sign-in method.';
+      else if (code === 'auth/configuration-not-found') message = 'Configuration missing. Enable Google in Firebase Auth and verify authDomain.';
+      else if (code === 'auth/invalid-api-key') message = 'Invalid API key. Verify PUBLIC_FIREBASE_API_KEY in your .env.';
+      else if (code === 'auth/network-request-failed') message = 'Network error. Check connectivity and ad/script blockers.';
+      if (errorEl) {
+        errorEl.textContent = message + (code ? ` (${code})` : '');
+        errorEl.removeAttribute('hidden');
+      } else {
+        alert(message + (code ? ` (${code})` : ''));
+      }
+    }
+  });
+
+  function getEmailAndPassword() {
+    const email = (emailInput && 'value' in emailInput) ? String((emailInput as HTMLInputElement).value || '').trim() : '';
+    const password = (passwordInput && 'value' in passwordInput) ? String((passwordInput as HTMLInputElement).value || '') : '';
+    return { email, password };
+  }
+
+  function setError(message: string) {
+    if (errorEl) {
+      errorEl.textContent = message;
+      if (message) errorEl.removeAttribute('hidden');
+      else errorEl.setAttribute('hidden', '');
+    }
+  }
+
+  emailSignupBtn?.addEventListener('click', async () => {
+    const { email, password } = getEmailAndPassword();
+    setError('');
+    if (!email || !password) return setError('Email and password are required.');
+    if (password.length < 6) return setError('Password must be at least 6 characters.');
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      console.error('[Auth] Email sign-up failed', err);
+      const error = err as { code?: string };
+      const code = error && error.code ? String(error.code) : '';
+      let message = 'Sign-up failed. Please try again.';
+      if (code === 'auth/email-already-in-use') message = 'Email already in use. Try logging in.';
+      else if (code === 'auth/invalid-email') message = 'Invalid email address.';
+      else if (code === 'auth/weak-password') message = 'Password is too weak (min 6 characters).';
+      else if (code === 'auth/network-request-failed') message = 'Network error. Check connectivity and blockers.';
+      setError(message + (code ? ` (${code})` : ''));
+    }
+  });
+
+  emailLoginBtn?.addEventListener('click', async () => {
+    const { email, password } = getEmailAndPassword();
+    setError('');
+    if (!email || !password) return setError('Email and password are required.');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      console.error('[Auth] Email login failed', err);
+      const error = err as { code?: string };
+      const code = error && error.code ? String(error.code) : '';
+      let message = 'Login failed. Please try again.';
+      if (code === 'auth/invalid-email') message = 'Invalid email address.';
+      else if (code === 'auth/user-not-found') message = 'No user found with this email.';
+      else if (code === 'auth/wrong-password') message = 'Incorrect password.';
+      else if (code === 'auth/too-many-requests') message = 'Too many attempts. Please wait and try again.';
+      else if (code === 'auth/network-request-failed') message = 'Network error. Check connectivity and blockers.';
+      setError(message + (code ? ` (${code})` : ''));
+    }
+  });
+
+  emailResetBtn?.addEventListener('click', async () => {
+    const { email } = getEmailAndPassword();
+    setError('');
+    if (!email) return setError('Enter your email to reset password.');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setError('Password reset email sent. Check your inbox.');
+    } catch (err) {
+      console.error('[Auth] Password reset failed', err);
+      const error = err as { code?: string };
+      const code = error && error.code ? String(error.code) : '';
+      let message = 'Could not send reset email.';
+      if (code === 'auth/invalid-email') message = 'Invalid email address.';
+      else if (code === 'auth/user-not-found') message = 'No user found with this email.';
+      setError(message + (code ? ` (${code})` : ''));
+    }
+  });
+
+  signOutButton?.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error('[Auth] Sign-out failed', err);
+      alert('Sign-out failed. Please try again.');
+    }
+  });
+</script>
+
+

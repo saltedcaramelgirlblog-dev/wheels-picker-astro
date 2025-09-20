@@ -1,0 +1,489 @@
+<style>
+.homebox {
+  background-color: #1c1c1c;
+  width: 400px;
+    height: 480px;
+  border: 1px solid #aea73b;
+    border-radius: 8px;
+  padding: 20px;
+}
+.homebox h3 {
+    color: white;
+    font-size: 1rem;
+    text-transform: uppercase;
+    margin: 0;
+}
+.homebox p {
+    color: white;
+    font-size: 14px;
+}
+/* Make the box a column layout so the list can scroll inside */
+.homebox { display: flex; flex-direction: column; }
+input[type="text"] {
+  height: 40px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="number"] {
+  height: 40px;
+  width: 15px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: textfield;
+}
+/* Make dynamic and top-row inputs visually identical */
+.wheel-text { height: 40px; background: #6e6e6e; color: #e3e3e3; padding: 0 12px; border: none; outline: none; -webkit-appearance: none; appearance: none; }
+.wheel-qty  { height: 40px; width: 15px; background: #6e6e6e; color: #e3e3e3; padding: 0 12px; border: none; outline: none; -webkit-appearance: none; appearance: textfield; }
+/* Hide number input spinners for WebKit */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Layout for inputs */
+.input-row { display: flex; gap: 8px; align-items: center; }
+input[type="text"] { flex: 1; }
+input[type="text"]::placeholder {
+  color: #cfcfcf;
+}
+input[type="text"]:focus {
+  outline: none;
+  box-shadow: none; /* keep visual stable; add your own if desired */
+}
+ul { list-style: none; margin: 12px 0 0; padding: 0; }
+li { color: #aaaaaa; font-size: 14px; padding: 4px 0; }
+/* Vertical spacing between entry rows and make list scrollable within box */
+#wheel-name-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; min-height: 0; }
+/* List entry rows */
+.entry-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.entry-row input[type="text"] { flex: 1; }
+/* Ensure entry inputs look identical to the main inputs */
+
+/* Custom checkbox styles */
+.checkbox-container {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+  min-width: unset;
+  font-size: unset;
+  padding-left: 0;
+}
+.checkbox-container input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+  z-index: 2;
+}
+.checkmark {
+  position: relative;
+  display: block;
+  height: 40px;
+  width: 40px;
+  background-color: #eee;
+  border-radius: 4px;
+  z-index: 1;
+}
+.checkbox-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+.checkbox-container .checkmark:after {
+  left: 13px;
+  top: 10px;
+  width: 7px;
+  height: 14px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+/* Actions row under inputs */
+.actions-row { display: flex; gap: 8px; margin-top: 10px; }
+.action-btn {
+  height: 36px;
+  border: none;
+  padding: 0 12px;
+  background: #f0ae5e;
+  color: #212121;
+  cursor: pointer;
+}
+.action-btn.secondary { background: #6e6e6e; color: #e3e3e3; }
+.action-btn.primary { background: #f7b71e; color: #212121; }
+/* Header row with title + actions inline */
+.homebox-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.homebox-header .actions-row { margin-top: 0; }
+/* Counter row under the input row */
+.count-row { color: #e3e3e3; font-size: 12px; margin-top: 6px; }
+/* Paste modal styles */
+#paste-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+}
+#paste-modal.open { display: flex; }
+#paste-modal .modal {
+  width: 700px;
+  height: 420px;
+  max-width: calc(100% - 48px);
+  max-height: calc(100% - 48px);
+  background: #1c1f23;
+  border: 5px solid #aea73b;
+  color: #ededed;
+  padding: 20px 24px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+}
+#paste-modal .modal-title { margin: 0 0 8px; font-weight: 700; font-size: 18px; color: #ffffff; }
+#paste-modal .modal-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  overflow: hidden;
+}
+#paste-textarea {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: #2a2e33;
+  color: #e3e3e3;
+  padding: 12px;
+}
+.paste-preview {
+  width: 100%;
+  height: 100%;
+  background: #222529;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 12px;
+  overflow: auto;
+}
+#paste-modal .modal-actions { margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px; }
+#paste-add, #paste-close { background: #f7b71e; color: #ffffff; border: none; padding: 10px 14px; font-weight: 900; font-size: 14px; line-height: 1; cursor: pointer; }
+#paste-close { background: #6e6e6e; }
+
+/* Medium: shrink box sooner to avoid touching wheel */
+@media (max-width: 1500px) {
+  .homebox { width: min(90vw, 360px); height: auto; }
+}
+
+/* Mobile sizing: make the box smaller and fluid on small screens */
+@media (max-width: 768px) {
+  .homebox {
+    width: min(90vw, 340px);
+    height: auto;
+    padding: 16px;
+  }
+  .homebox .wheel-text { width: 100%; }
+
+  /* On mobile, don't scroll the list by default; only when >8 entries */
+  #wheel-name-list {
+    flex: unset;
+    overflow-y: visible;
+    min-height: unset;
+    /* Variables used by the scrolling height calculation */
+    --entry-row-height: 48px;
+    --entry-row-gap: 8px;
+  }
+  #wheel-name-list.scrolling {
+    overflow-y: auto;
+    max-height: calc(8 * var(--entry-row-height) + 7 * var(--entry-row-gap));
+  }
+}
+</style>
+
+<style is:global>
+/* Ensure dynamically added inputs (with classes) match the top-row look */
+.wheel-text {
+  width: 50%;
+  height: 40px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.wheel-text::placeholder { color: #cfcfcf; }
+.wheel-text:focus { outline: none; box-shadow: none; }
+
+.wheel-qty {
+  height: 40px;
+  width: 15px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: textfield;
+}
+.wheel-qty::-webkit-outer-spin-button,
+.wheel-qty::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+
+<div class="homebox rng-box">
+  <div class="homebox-header">
+    <h3>Inputs <span class="rng-badge" id="rng-count">0</span></h3>
+  </div>
+  <div class="rng-row">
+    <button id="rng-mode-number" type="button" class="action-btn primary">Random Number</button>
+    <button id="rng-mode-digits" type="button" class="action-btn secondary">Random Digits</button>
+  </div>
+  <div class="rng-row">
+    <button id="rng-method-range" type="button" class="action-btn primary">By Range</button>
+    <button id="rng-method-formula" type="button" class="action-btn secondary">By Formula</button>
+  </div>
+  <div id="rng-section-range">
+    <div class="rng-range-title">Range:</div>
+    <div class="rng-range">
+      <div class="rng-box-num">
+        <input id="rng-min" type="number" value="1" />
+        <div class="rng-sub">MIN</div>
+      </div>
+      <div class="rng-box-interval">
+        <span>(</span><input id="rng-interval" type="number" value="1" min="1" /><span>)</span>
+        <div class="rng-sub">INTERVAL</div>
+      </div>
+      <div class="rng-box-num">
+        <input id="rng-max" type="number" value="10" />
+        <div class="rng-sub">MAX</div>
+      </div>
+    </div>
+    <div class="rng-hint">*Maximum 1000 Portions</div>
+
+    <div class="rng-exclude">
+      <label for="rng-exclude">Exclude:</label>
+      <input id="rng-exclude" type="text" placeholder="E.g. 2,5,8" />
+    </div>
+    <div class="rng-note">* Numbers to be excluded (separated by comma ,)</div>
+  </div>
+
+  <div id="rng-section-formula" class="hidden">
+    <div class="rng-formula-title">Formula:</div>
+    <textarea id="rng-formula" class="rng-formula-input" placeholder="Example: (1;2;10)  → from 1 to 10 step 2"></textarea>
+    <div class="rng-process-row">
+      <button id="rng-process" type="button" class="action-btn primary">Process</button>
+    </div>
+    <div class="rng-note">* Use format (min;step;max). Max 1000 results.</div>
+  </div>
+</div>
+
+<style>
+  .rng-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+  .rng-row .action-btn { width: 100%; }
+  .rng-badge { display: inline-block; margin-left: 6px; background: #6e6e6e; color: #ffffff; border-radius: 6px; font-size: 12px; padding: 2px 6px; vertical-align: middle; }
+  .rng-range-title { margin: 12px 0 6px; color: #e3e3e3; font-size: 14px; }
+  .rng-range { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 16px; align-items: end; }
+  .rng-box { overflow: hidden; }
+  .rng-box-num { display: grid; justify-items: center; }
+  .rng-box-num input { width: 100%; max-width: 180px; height: 100px; text-align: center; font-size: 48px; background: #6e6e6e; color: #e3e3e3; border: none; }
+  .rng-box-interval { display: grid; justify-items: center; align-items: center; grid-template-columns: auto auto auto; gap: 6px; }
+  .rng-box-interval input { width: 100%; max-width: 90px; height: 50px; text-align: center; font-size: 24px; background: #6e6e6e; color: #e3e3e3; border: none; }
+  .rng-sub { text-align: center; color: #e3e3e3; font-size: 12px; margin-top: 6px; }
+  .rng-hint { color: #cfcfcf; font-size: 12px; margin-top: 8px; }
+  .rng-exclude { margin-top: 12px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; }
+  .rng-exclude input { height: 40px; width: 100%; background: #6e6e6e; color: #e3e3e3; border: none; padding: 0 12px; }
+  .rng-note { color: #cfcfcf; font-size: 12px; margin-top: 6px; }
+  .hidden { display: none !important; }
+  .rng-formula-title { margin: 12px 0 6px; color: #e3e3e3; font-size: 14px; }
+  .rng-formula-input { width: 100%; min-height: 160px; background: #6e6e6e; color: #e3e3e3; border: none; padding: 12px; resize: vertical; }
+  .rng-process-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+  @media (max-width: 768px) {
+    .rng-box-num input { width: 100%; max-width: 300px; height: 80px; font-size: 36px; }
+  }
+</style>
+
+<script is:inline>
+  (function initRngBox() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initRngBox, { once: true });
+      return;
+    }
+
+    const els = {
+      count: document.getElementById('rng-count'),
+      modeNumber: document.getElementById('rng-mode-number'),
+      modeDigits: document.getElementById('rng-mode-digits'),
+      methodRange: document.getElementById('rng-method-range'),
+      methodFormula: document.getElementById('rng-method-formula'),
+      sectionRange: document.getElementById('rng-section-range'),
+      sectionFormula: document.getElementById('rng-section-formula'),
+      min: document.getElementById('rng-min'),
+      max: document.getElementById('rng-max'),
+      interval: document.getElementById('rng-interval'),
+      exclude: document.getElementById('rng-exclude'),
+      formula: document.getElementById('rng-formula'),
+      process: document.getElementById('rng-process'),
+    };
+    if (!els.count) return;
+
+    let mode = 'number'; // 'number' | 'digits'
+    let method = 'range'; // 'range' | 'formula'
+
+    function setActive(primaryBtn, secondaryBtn) {
+      primaryBtn.classList.add('primary');
+      primaryBtn.classList.remove('secondary');
+      secondaryBtn.classList.add('secondary');
+      secondaryBtn.classList.remove('primary');
+    }
+
+    function parseExcludeList(text) {
+      const s = new Set();
+      if (!text) return s;
+      text
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .forEach((v) => {
+          const n = Number(v);
+          if (Number.isFinite(n)) s.add(n);
+        });
+      return s;
+    }
+
+    function parseFormula(text) {
+      if (!text) return [];
+      let t = String(text).trim();
+      if (t.startsWith('(') && t.endsWith(')')) t = t.slice(1, -1);
+      t = t.replace(/,/g, ';');
+      const parts = t.split(/\s*;\s*/).filter(Boolean).map((v) => Number(v));
+      if (parts.every((n) => Number.isFinite(n))) {
+        if (parts.length === 3) {
+          const [min, stepRaw, max] = parts;
+          const step = Math.max(1, Math.floor(stepRaw));
+          return generateRange(min, max, step, new Set());
+        }
+        if (parts.length === 2) {
+          const [min, max] = parts;
+          return generateRange(min, max, 1, new Set());
+        }
+      }
+      // Fallback: extract all integers from the text
+      const nums = (t.match(/-?\d+/g) || []).map((v) => Number(v));
+      return nums.slice(0, 1000);
+    }
+
+    function generateRange(min, max, step, excludeSet) {
+      const list = [];
+      if (!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(step) || step <= 0) return list;
+      if (max < min) [min, max] = [max, min];
+      let count = 0;
+      for (let n = min; n <= max; n += step) {
+        if (excludeSet.has(n)) continue;
+        list.push(n);
+        count++;
+        if (count >= 1000) break;
+      }
+      return list;
+    }
+
+    function compute() {
+      let results = [];
+      const excludeSet = parseExcludeList((els.exclude && els.exclude.value) || '');
+      if (mode === 'digits') {
+        results = generateRange(0, 9, 1, excludeSet);
+      } else if (method === 'range') {
+        const min = Number((els.min && els.min.value) || 0);
+        const max = Number((els.max && els.max.value) || 0);
+        let step = Math.floor(Number((els.interval && els.interval.value) || 1));
+        if (!Number.isFinite(step) || step < 1) step = 1;
+        results = generateRange(min, max, step, excludeSet);
+      } else if (method === 'formula') {
+        results = parseFormula(els.formula && els.formula.value);
+      } else {
+        results = [];
+      }
+      if (els.count) els.count.textContent = String(results.length);
+      window.dispatchEvent(
+        new CustomEvent('wheel:updateNames', { detail: { names: results.map((n) => String(n)) } })
+      );
+    }
+
+    ['input', 'change'].forEach((ev) => {
+      if (els.min) els.min.addEventListener(ev, compute);
+      if (els.max) els.max.addEventListener(ev, compute);
+      if (els.interval) els.interval.addEventListener(ev, compute);
+      if (els.exclude) els.exclude.addEventListener(ev, compute);
+    });
+
+    if (els.modeNumber)
+      els.modeNumber.addEventListener('click', () => {
+        mode = 'number';
+        setActive(els.modeNumber, els.modeDigits);
+        compute();
+      });
+    if (els.modeDigits)
+      els.modeDigits.addEventListener('click', () => {
+        mode = 'digits';
+        setActive(els.modeDigits, els.modeNumber);
+        compute();
+      });
+
+    if (els.methodRange)
+      els.methodRange.addEventListener('click', () => {
+        method = 'range';
+        setActive(els.methodRange, els.methodFormula);
+        if (els.sectionRange) els.sectionRange.classList.remove('hidden');
+        if (els.sectionFormula) els.sectionFormula.classList.add('hidden');
+        compute();
+      });
+    if (els.methodFormula)
+      els.methodFormula.addEventListener('click', () => {
+        method = 'formula';
+        if (els.methodRange && els.methodFormula) setActive(els.methodFormula, els.methodRange);
+        if (els.sectionRange) els.sectionRange.classList.add('hidden');
+        if (els.sectionFormula) els.sectionFormula.classList.remove('hidden');
+        if (els.count) els.count.textContent = '0';
+      });
+
+    if (els.process) {
+      els.process.addEventListener('click', () => {
+        method = 'formula';
+        compute();
+      });
+    }
+
+    compute();
+  })();
+</script>
+
+<!-- Paste List Modal -->
+<!-- Removed legacy paste modal and list logic -->
+
+
+
+

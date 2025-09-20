@@ -1,0 +1,558 @@
+<style>
+.homebox {
+  background-color: #1c1c1c;
+  width: 400px;
+    height: 480px;
+  border: 1px solid #aea73b;
+    border-radius: 8px;
+  padding: 20px;
+}
+.homebox h3 {
+    color: white;
+    font-size: 1rem;
+    text-transform: uppercase;
+    margin: 0;
+}
+.homebox p {
+    color: white;
+    font-size: 14px;
+}
+/* Make the box a column layout so the list can scroll inside */
+.homebox { display: flex; flex-direction: column; }
+input[type="text"] {
+  height: 40px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="number"] {
+  height: 40px;
+  width: 15px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: textfield;
+}
+/* Make dynamic and top-row inputs visually identical */
+.wheel-text { height: 40px; background: #6e6e6e; color: #e3e3e3; padding: 0 12px; border: none; outline: none; -webkit-appearance: none; appearance: none; }
+.wheel-qty  { height: 40px; width: 15px; background: #6e6e6e; color: #e3e3e3; padding: 0 12px; border: none; outline: none; -webkit-appearance: none; appearance: textfield; }
+/* Hide number input spinners for WebKit */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Layout for inputs */
+.input-row { display: flex; gap: 8px; align-items: center; }
+input[type="text"] { flex: 1; }
+input[type="text"]::placeholder {
+  color: #cfcfcf;
+}
+input[type="text"]:focus {
+  outline: none;
+  box-shadow: none; /* keep visual stable; add your own if desired */
+}
+ul { list-style: none; margin: 12px 0 0; padding: 0; }
+li { color: #aaaaaa; font-size: 14px; padding: 4px 0; }
+/* Vertical spacing between entry rows and make list scrollable within box */
+#wheel-name-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; min-height: 0; }
+/* List entry rows */
+.entry-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.entry-row input[type="text"] { flex: 1; }
+/* Ensure entry inputs look identical to the main inputs */
+
+/* Custom checkbox styles */
+.checkbox-container {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+  min-width: unset;
+  font-size: unset;
+  padding-left: 0;
+}
+.checkbox-container input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+  z-index: 2;
+}
+.checkmark {
+  position: relative;
+  display: block;
+  height: 40px;
+  width: 40px;
+  background-color: #eee;
+  border-radius: 4px;
+  z-index: 1;
+}
+.checkbox-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+.checkbox-container .checkmark:after {
+  left: 13px;
+  top: 10px;
+  width: 7px;
+  height: 14px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+/* Actions row under inputs */
+.actions-row { display: flex; gap: 8px; margin-top: 10px; }
+.action-btn {
+  height: 36px;
+  border: none;
+  padding: 0 12px;
+  background: #f0ae5e;
+  color: #212121;
+  cursor: pointer;
+}
+.action-btn.secondary { background: #6e6e6e; color: #e3e3e3; }
+.action-btn.primary { background: #f7b71e; color: #212121; }
+/* Header row with title + actions inline */
+.homebox-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.homebox-header .actions-row { margin-top: 0; }
+/* Counter row under the input row */
+.count-row { color: #e3e3e3; font-size: 12px; margin-top: 6px; }
+/* Paste modal styles */
+#paste-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+}
+#paste-modal.open { display: flex; }
+#paste-modal .modal {
+  width: 700px;
+  height: 420px;
+  max-width: calc(100% - 48px);
+  max-height: calc(100% - 48px);
+  background: #1c1f23;
+  border: 5px solid #aea73b;
+  color: #ededed;
+  padding: 20px 24px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+}
+#paste-modal .modal-title { margin: 0 0 8px; font-weight: 700; font-size: 18px; color: #ffffff; }
+#paste-modal .modal-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  overflow: hidden;
+}
+#paste-textarea {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: #2a2e33;
+  color: #e3e3e3;
+  padding: 12px;
+}
+.paste-preview {
+  width: 100%;
+  height: 100%;
+  background: #222529;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 12px;
+  overflow: auto;
+}
+#paste-modal .modal-actions { margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px; }
+#paste-add, #paste-close { background: #f7b71e; color: #ffffff; border: none; padding: 10px 14px; font-weight: 900; font-size: 14px; line-height: 1; cursor: pointer; }
+#paste-close { background: #6e6e6e; }
+
+/* Medium: shrink box sooner to avoid touching wheel */
+@media (max-width: 1500px) {
+  .homebox { width: min(90vw, 360px); height: auto; }
+}
+
+/* Mobile sizing: make the box smaller and fluid on small screens */
+@media (max-width: 768px) {
+  .homebox {
+    width: min(90vw, 340px);
+    height: auto;
+    padding: 16px;
+  }
+  .homebox .wheel-text { width: 100%; }
+
+  /* On mobile, don't scroll the list by default; only when >8 entries */
+  #wheel-name-list {
+    flex: unset;
+    overflow-y: visible;
+    min-height: unset;
+    /* Variables used by the scrolling height calculation */
+    --entry-row-height: 48px;
+    --entry-row-gap: 8px;
+  }
+  #wheel-name-list.scrolling {
+    overflow-y: auto;
+    max-height: calc(8 * var(--entry-row-height) + 7 * var(--entry-row-gap));
+  }
+}
+</style>
+
+<style is:global>
+/* Ensure dynamically added inputs (with classes) match the top-row look */
+.wheel-text {
+  width: 50%;
+  height: 40px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.wheel-text::placeholder { color: #cfcfcf; }
+.wheel-text:focus { outline: none; box-shadow: none; }
+
+.wheel-qty {
+  height: 40px;
+  width: 15px;
+  border: none;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  padding: 0 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: textfield;
+}
+.wheel-qty::-webkit-outer-spin-button,
+.wheel-qty::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+
+<div class="homebox">
+  <div class="homebox-header">
+    <h3>Wheel Inputs</h3>
+    <div class="actions-row">
+      <button id="btn-shuffle" type="button" class="action-btn secondary" title="Shuffle entries">Shuffle</button>
+      <button id="btn-sort-az" type="button" class="action-btn secondary" title="Sort A–Z">Sort A–Z</button>
+      <button id="btn-paste-list" type="button" class="action-btn secondary" title="Paste a list of names">Paste List</button>
+      <button id="btn-settings" type="button" class="action-btn primary" title="Open Settings">Settings</button>
+    </div>
+  </div>
+  <div class="input-row">
+    <input id="wheel-qty-input" class="wheel-qty" type="number" min="1" value="1" aria-label="Quantity" />
+    <input id="wheel-name-input" class="wheel-text" type="text" placeholder="Input Text Here" />
+  </div>
+  <div class="count-row">Entries: <span id="wheel-count">0</span></div>
+  <ul id="wheel-name-list"></ul>
+</div>
+
+<!-- Paste List Modal -->
+<div id="paste-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal" role="document">
+    <h3 class="modal-title">Paste List of Names</h3>
+    <div class="modal-body">
+      <textarea id="paste-textarea" placeholder="Paste names here (one per line, or separated by commas)"></textarea>
+      <div id="paste-preview" class="paste-preview"></div>
+    </div>
+    <div class="modal-actions">
+      <button id="paste-add" type="button">Add Inputs</button>
+      <button id="paste-close" type="button">Close</button>
+    </div>
+  </div>
+  
+</div>
+
+<script is:inline>
+  (function initHomebox() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHomebox, { once: true });
+      return;
+    }
+
+    const input = document.getElementById('wheel-name-input');
+    const qtyInput = document.getElementById('wheel-qty-input');
+    const list = document.getElementById('wheel-name-list');
+    const shuffleBtn = document.getElementById('btn-shuffle');
+    const sortAZBtn = document.getElementById('btn-sort-az');
+    const settingsBtn = document.getElementById('btn-settings');
+    const pasteBtn = document.getElementById('btn-paste-list');
+    const pasteOverlay = document.getElementById('paste-modal');
+    const pasteTextarea = document.getElementById('paste-textarea');
+    const pastePreview = document.getElementById('paste-preview');
+    const pasteAddBtn = document.getElementById('paste-add');
+    const pasteCloseBtn = document.getElementById('paste-close');
+    const countEl = document.getElementById('wheel-count');
+    if (!input || !list) return;
+
+    const entries = [];
+
+    function updateCount() {
+      if (countEl) countEl.textContent = String(entries.length);
+      // Toggle mobile scrolling when entries exceed 8
+      if (list) {
+        if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+          if (entries.length > 8) list.classList.add('scrolling');
+          else list.classList.remove('scrolling');
+        } else {
+          list.classList.remove('scrolling');
+        }
+      }
+    }
+
+    function renderList() {
+      list.innerHTML = '';
+      entries.forEach((entry, idx) => {
+        const li = document.createElement('li');
+        li.className = 'entry-row';
+
+        
+
+        // Only render the name input
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = entry.label || '';
+        nameInput.placeholder = 'Edit name';
+        nameInput.className = 'wheel-text';
+        nameInput.addEventListener('input', () => {
+          entries[idx].label = nameInput.value;
+          dispatchNames();
+        });
+
+        // Checkbox for visibility
+        const checkboxLabel = document.createElement('label');
+        checkboxLabel.className = 'checkbox-container';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = entry.visible !== false;
+        checkbox.addEventListener('change', () => {
+          entries[idx].visible = checkbox.checked;
+          dispatchNames();
+        });
+        const checkmark = document.createElement('span');
+        checkmark.className = 'checkmark';
+        checkboxLabel.appendChild(checkbox);
+        checkboxLabel.appendChild(checkmark);
+
+        // Duplicate button
+        const duplicateBtn = document.createElement('button');
+        duplicateBtn.textContent = 'Duplicate';
+        duplicateBtn.style.marginLeft = '8px';
+        duplicateBtn.style.padding = '4px 10px';
+        duplicateBtn.style.background = '#f0ae5e';
+        duplicateBtn.style.color = '#212121';
+        duplicateBtn.style.border = 'none';
+        duplicateBtn.style.cursor = 'pointer';
+        duplicateBtn.addEventListener('click', () => {
+          entries.splice(idx + 1, 0, { label: entry.label, qty: 1, visible: entry.visible });
+          renderList();
+          dispatchNames();
+        });
+
+        // X (delete) button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '✕';
+        deleteBtn.title = 'Delete';
+        deleteBtn.style.marginLeft = '8px';
+        deleteBtn.style.padding = '4px 10px';
+        deleteBtn.style.background = '#d9534f';
+        deleteBtn.style.color = '#fff';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.borderRadius = '4px';
+        deleteBtn.addEventListener('click', () => {
+          entries.splice(idx, 1);
+          renderList();
+          dispatchNames();
+        });
+
+        li.appendChild(nameInput);
+        li.appendChild(checkboxLabel);
+        li.appendChild(duplicateBtn);
+        li.appendChild(deleteBtn);
+        list.appendChild(li);
+      });
+      updateCount();
+    }
+
+    function parsePastedNames(text) {
+      const parts = text
+        .split(/\r?\n/) // split lines
+        .flatMap((line) => line.split(/[;,]+/)) // also split commas/semicolons
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return parts;
+    }
+
+    function updatePastePreview() {
+      if (!pasteTextarea || !pastePreview) return;
+      const names = parsePastedNames(pasteTextarea.value);
+      pastePreview.innerHTML = '';
+      const count = document.createElement('div');
+      count.textContent = `Count: ${names.length}`;
+      count.style.marginBottom = '8px';
+      pastePreview.appendChild(count);
+      const ul = document.createElement('ul');
+      ul.style.margin = '0';
+      ul.style.paddingLeft = '18px';
+      names.forEach((n) => {
+        const li = document.createElement('li');
+        li.textContent = n;
+        ul.appendChild(li);
+      });
+      pastePreview.appendChild(ul);
+    }
+
+    function dispatchNames() {
+      const names = [];
+      for (const e of entries) {
+        if (e.visible === false) continue;
+        const label = (e.label || '').trim();
+        const q = 1;
+        if (!label) continue;
+        for (let i = 0; i < q; i++) names.push(label);
+      }
+      window.dispatchEvent(new CustomEvent('wheel:updateNames', { detail: { names } }));
+    }
+
+    // Actions: Shuffle, Sort A–Z, Settings
+    if (shuffleBtn) {
+      shuffleBtn.addEventListener('click', () => {
+        for (let i = entries.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [entries[i], entries[j]] = [entries[j], entries[i]];
+        }
+        renderList();
+        dispatchNames();
+      });
+    }
+
+    // Respond to orientation/resize to keep scrolling state accurate on mobile
+    function syncScrollingOnResize() {
+      if (!list) return;
+      if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+        if (entries.length > 8) list.classList.add('scrolling');
+        else list.classList.remove('scrolling');
+      } else {
+        list.classList.remove('scrolling');
+      }
+    }
+    window.addEventListener('resize', syncScrollingOnResize);
+    window.addEventListener('orientationchange', syncScrollingOnResize);
+    syncScrollingOnResize();
+    if (sortAZBtn) {
+      sortAZBtn.addEventListener('click', () => {
+        entries.sort((a, b) => (a.label || '').localeCompare(b.label || '', undefined, { sensitivity: 'base' }));
+        renderList();
+        dispatchNames();
+      });
+    }
+    if (pasteBtn) {
+      pasteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!pasteOverlay) return;
+        pasteOverlay.classList.add('open');
+        pasteOverlay.setAttribute('aria-hidden', 'false');
+        if (pasteTextarea) pasteTextarea.focus();
+        updatePastePreview();
+      });
+    }
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const overlay = document.getElementById('settings-modal');
+        if (overlay) {
+          overlay.classList.add('open');
+          overlay.setAttribute('aria-hidden', 'false');
+        } else {
+          // Fallback: trigger navbar link if present
+          const settingsLink = document.getElementById('settings-link');
+          if (settingsLink) settingsLink.click();
+        }
+      });
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const value = input.value.trim();
+      if (!value) return;
+      entries.push({ label: value, qty: 1, visible: true });
+      input.value = '';
+      renderList();
+      dispatchNames();
+    });
+
+    if (pasteTextarea) {
+      pasteTextarea.addEventListener('input', () => {
+        updatePastePreview();
+      });
+    }
+
+    function closePasteOverlay() {
+      if (!pasteOverlay) return;
+      pasteOverlay.classList.remove('open');
+      pasteOverlay.setAttribute('aria-hidden', 'true');
+    }
+    if (pasteCloseBtn && pasteOverlay) {
+      pasteCloseBtn.addEventListener('click', () => {
+        closePasteOverlay();
+      });
+      pasteOverlay.addEventListener('click', (e) => {
+        if (e.target === pasteOverlay) closePasteOverlay();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && pasteOverlay.classList.contains('open')) closePasteOverlay();
+      });
+    }
+
+    if (pasteAddBtn) {
+      pasteAddBtn.addEventListener('click', () => {
+        if (!pasteTextarea) return;
+        const names = parsePastedNames(pasteTextarea.value);
+        if (names.length) {
+          names.forEach((n) => entries.push({ label: n, qty: 1, visible: true }));
+          renderList();
+          dispatchNames();
+        }
+        closePasteOverlay();
+      });
+    }
+
+    // Reset on global "New" action
+    window.addEventListener('wheel:new', () => {
+      entries.splice(0, entries.length);
+      if (input) input.value = '';
+      if (qtyInput) qtyInput.value = '1';
+      renderList();
+      dispatchNames();
+    });
+  })();
+</script>
+
+

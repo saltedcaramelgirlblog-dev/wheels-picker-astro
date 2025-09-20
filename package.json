@@ -9,6 +9,23 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.13.5"
+    "@astrojs/partytown": "2.1.4",
+    "@astrojs/sitemap": "^3.5.1",
+    "@auth/core": "^0.37.4",
+    "@digi4care/astro-google-tagmanager": "1.6.0",
+    "@tabler/icons": "^3.34.1",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/vite": "^4.1.13",
+    "astro": "^5.13.5",
+    "astro-breadcrumbs": "^3.3.1",
+    "astro-i18n-aut": "^0.7.3",
+    "astro-i18next": "^1.0.0-beta.21",
+    "astro-seo-meta": "5.2.0",
+    "auth-astro": "^4.2.0",
+    "firebase": "^12.2.1",
+    "tailwind-merge": "^3.3.1",
+    "tailwind-variants": "^2.1.0",
+    "tailwindcss": "^4.1.13",
+    "tw-animate-css": "^1.3.8"
   }
 }

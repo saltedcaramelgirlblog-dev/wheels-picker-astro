@@ -1,0 +1,53 @@
+{
+  "site": {
+    "title": "Astro Game Wheel",
+    "description": "Spin the wheel game"
+  },
+  "home": {
+    "title": "Welcome to the game!"
+  },
+  "nav": {
+    "link1": "Link 1",
+    "link2": "Link 2",
+    "settings": "Settings",
+    "themes": "Themes",
+    "link3": "Link 3",
+    "link4": "Link 4"
+  },
+  "common": {
+    "close": "Close",
+    "save": "Save",
+    "reset": "Reset",
+    "duplicate": "Duplicate",
+    "delete": "Delete"
+  },
+  "themes": {
+    "title": "Choose a Theme"
+  },
+  "settings": {
+    "title": "Settings",
+    "spinDuration": "Spin Duration",
+    "wheelSoundVolume": "Wheel Sound Volume",
+    "tadaSoundVolume": "Tada Sound Volume"
+  },
+  "homebox": {
+    "title": "Wheel Inputs",
+    "quantity": "Quantity",
+    "placeholder": "Input Text Here",
+    "editName": "Edit name"
+  },
+  "wheel": {
+    "spin": "SPIN"
+  },
+  "pages": {
+    "about": {
+      "title": "About"
+    },
+    "privacy": {
+      "title": "Privacy Policy"
+    },
+    "terms": {
+      "title": "Terms & Conditions"
+    }
+  }
+}

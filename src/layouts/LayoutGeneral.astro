@@ -1,0 +1,151 @@
+---
+import Navbar from '../components/navbar.astro';
+import Footer from '../components/footer.astro';
+import { GoogleTagmanagerPartytown } from '@digi4care/astro-google-tagmanager';
+import { Seo } from 'astro-seo-meta';
+const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
+const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
+---
+<!doctype html>
+<html lang="en">
+	<head>
+		{GTM_ID ? <GoogleTagmanagerPartytown id={GTM_ID} /> : null}
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<Seo
+			title="Wheels Picker – Free and easy-to-use random picker."
+			description="Create and spin wheels to pick random winners, options, and decisions quickly. Free, simple, and mobile-friendly."
+			icon="/favicon.svg"
+		/>
+	</head>
+	<body>
+	  <div class="container">
+		  <Navbar />
+		  <div class="main-content">
+			  <div class="main-content-left"></div>
+			  <div class="main-content-body">
+				  <article class="main-content-text"><slot /></article>
+			  </div>
+			  <div class="main-content-right"></div>
+		  </div>
+		  <Footer />
+	  </div>
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+	.container {  display: grid;
+		min-height: 100vh;
+		grid-template-columns: 0.5fr 2fr 0.5fr;
+		grid-template-rows: minmax(56px, auto) 1fr minmax(56px, auto);
+		gap: 0px 0px;
+		grid-auto-flow: row;
+		grid-template-areas:
+	"nav-bar nav-bar nav-bar"
+	"main-content main-content main-content"
+	"footer footer footer";
+	}
+
+	.nav-bar {
+		grid-area: nav-bar;
+		background-color: #212121;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		padding: 0 16px;
+	}
+
+	.nav-links {
+		list-style: none;
+		display: flex;
+		gap: 24px;
+		margin: 0;
+		padding: 0;
+	}
+
+	.nav-link {
+		color: #ffffff;
+		text-decoration: none;
+		font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+		font-size: 14px;
+	}
+
+	.nav-link:hover {
+		text-decoration: underline;
+	}
+
+	.main-content {  display: grid;
+		grid-template-columns: 0.5fr 2fr 0.5fr;
+		grid-template-rows: 1fr 1fr 1fr;
+		gap: 0px 0px;
+		grid-auto-flow: row;
+		grid-template-areas:
+	"main-content-left main-content-body main-content-right"
+	"main-content-left main-content-body main-content-right"
+	"main-content-left main-content-body main-content-right";
+		grid-area: main-content;
+		background-color: #1e1e1e;
+	}
+
+	.main-content-left { grid-area: main-content-left; }
+
+	.main-content-body {
+		grid-area: main-content-body;
+		text-align: justify;
+		text-decoration-color: #B9BCC3;
+		color: #B9BCC3;
+		line-height: 1.8;
+	}
+	.main-content-body > :first-child { margin-top: 0; }
+	.main-content-body > :last-child { margin-bottom: 0; }
+
+	.main-content-right { grid-area: main-content-right; }
+
+	.main-content-text {
+		width: 100%;
+		margin: 0;
+	}
+
+	/* Style Markdown h2 like: text-4xl font-bold dark:text-white */
+	:global(.main-content-body h2) {
+		font-size: 1.25rem; /* text-4xl */
+		line-height: 1.5rem;
+		font-weight: 700; /* font-bold */
+		color: #ffffff; /* dark:text-white */
+		margin: 0 0 0.5em 0;
+		scroll-margin-top: 80px;
+	}
+
+	/* Center images coming from Markdown without affecting text */
+	:global(.main-content-body p > img:only-child) {
+		display: block;
+		margin: 1rem auto;
+		max-width: 100%;
+		height: auto;
+	}
+	:global(.main-content-body p > a:only-child > img) {
+		display: block;
+		margin: 1rem auto;
+		max-width: 100%;
+		height: auto;
+	}
+
+	/* Add top padding to the first Markdown heading */
+	:global(.main-content-body h2:first-of-type) { padding-top: 0; }
+
+	.footer {
+		grid-area: footer;
+		background-color: #787878;
+	}
+
+</style>
+
+

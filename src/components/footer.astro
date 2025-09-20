@@ -1,0 +1,28 @@
+<div class="footer">
+  <nav class="footer-nav">
+    <ul class="nav-links">
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li><a href="/tools" class="nav-link">Tools</a></li>
+      <li><a href="/privacy" class="nav-link">Privacy Policy</a></li>
+      <li><a href="/terms" class="nav-link">Terms and Conditions</a></li>
+      <li><a href="/about" class="nav-link">About</a></li>
+      <li><a href="/contact" class="nav-link">Contact</a></li>
+    </ul>
+  </nav>
+</div>
+
+<style>
+  .footer {
+    grid-area: footer;
+    background-color: #787878;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 56px;
+  }
+  .footer-nav { width: 100%; display: flex; justify-content: center; }
+  .nav-links { list-style: none; display: flex; gap: 24px; margin: 0; padding: 0; }
+  .nav-link { color: #ffffff; text-decoration: none; font-size: 14px; }
+  .nav-link:hover { text-decoration: underline; }
+</style>
+

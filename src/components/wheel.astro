@@ -1,0 +1,889 @@
+---
+// Embedded spin-the-wheel component from vendor assets, scoped to #wheel-root
+---
+
+<div id="wheel-root">
+  <audio id="wheelSound" src="/src/assets/glass_005.ogg" preload="auto"></audio>
+  <audio id="spinClickSound" src="/src/assets/toggle_002.ogg" preload="auto"></audio>
+  <audio id="resultSound" src="/src/assets/sounds_tada.mp3" preload="auto"></audio>
+  <div id="spin_the_wheel">
+    <canvas id="wheel" width="500" height="500"></canvas>
+    <div id="spin">SPIN</div>
+  </div>
+  <button id="results-btn" type="button" aria-haspopup="dialog" aria-controls="results-modal" title="Show recent results">Results</button>
+  <div id="win-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3 class="modal-title"></h3>
+      <p class="modal-body"><strong id="win-modal-label"></strong></p>
+      <div class="modal-actions">
+        <button id="win-modal-close" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="results-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3 class="modal-title">Recent Results</h3>
+      <div class="modal-body">
+        <table id="results-table" aria-label="Recent results">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Result</th>
+              <th scope="col">Date & Time</th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-actions">
+        <button id="results-clear" type="button">Clear</button>
+        <button id="results-close" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap");
+
+#wheel-root * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#wheel-root {
+  width: 100%;
+  height: auto;
+  display: grid;
+  align-items: center;
+  justify-items: start;
+  position: relative;
+}
+/* Fullscreen mode for wheel only */
+#wheel-root.fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #111111;
+  display: grid;
+  place-items: center;
+  z-index: 2000;
+}
+#wheel-root.fullscreen #spin_the_wheel { max-width: 95vw; max-height: 95vh; }
+
+#wheel-root #spin_the_wheel {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+#wheel-root #wheel {
+  display: block;
+}
+
+#wheel-root #spin {
+  font:
+    1.5em/0 "Lato",
+    sans-serif;
+  user-select: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30%;
+  height: 30%;
+  margin: -15%;
+  background: #fff;
+  color: #fff;
+  box-shadow:
+    0 0 0 8px currentColor,
+    0 0px 15px 5px rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  transition: 0.8s;
+}
+
+#wheel-root #spin.pressed {
+  transform: scale(0.85);
+  box-shadow:
+    0 0 0 8px #f7b71e,
+    0 0px 16px 8px rgba(0,0,0,0.6);
+  background: #f7b71e;
+  color: #212121;
+  transition: transform 0.08s, background 0.08s, color 0.08s;
+}
+
+#wheel-root #spin::after {
+  content: "";
+  position: absolute;
+  top: -17px;
+  border: 10px solid transparent;
+  border-bottom-color: currentColor;
+  border-top: none;
+}
+
+#wheel-root .row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+#wheel-root .column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+}
+
+/* Modal (600x480) */
+#wheel-root .modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+}
+
+#wheel-root .modal-overlay.open {
+  display: flex;
+}
+
+#wheel-root .modal {
+  width: 600px;
+  height: 480px;
+  max-width: calc(100% - 48px);
+  max-height: calc(100% - 48px);
+  background: #1c1f23;
+    border: 5px solid #aea73b;
+  color: #111111;
+  padding: 20px 24px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+#wheel-root .modal-title {
+  margin: 0 0 8px;
+  font: 700 22px/1.2 "Lato", sans-serif;
+    color: white;
+}
+
+#wheel-root .modal-body {
+  margin: 0 0 16px;
+  color: #ededed;
+  font: 400 16px/1.5 "Lato", sans-serif;
+  text-align: center;
+  flex: 1;               /* fill available vertical space */
+  display: grid;         /* center winner label both ways */
+  place-items: center;   /* horizontal + vertical center */
+}
+
+#wheel-root .modal-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+#wheel-root #win-modal-close {
+  background: #f7b71e;
+  color: #ffffff;
+  border: none;
+  padding: 10px 14px;
+  font: 900 14px/1 "Lato", sans-serif;
+  cursor: pointer;
+}
+
+/* Winner label styled like H3 and centered */
+#wheel-root #win-modal-label {
+  display: block;
+  margin-top: 8px;
+  font: 700 28px/1.2 "Lato", sans-serif;
+  text-align: center;
+  color: #ffffff;
+    font-size: 7.2rem;
+}
+
+/* Results button (bottom-left) */
+#wheel-root #results-btn {
+  position: absolute;
+  bottom: 1px;
+  left: 1px;
+  background: #6e6e6e;
+  color: #e3e3e3;
+  border: none;
+  padding: 8px 12px;
+  font: 700 14px/1 "Lato", sans-serif;
+  cursor: pointer;
+  z-index: 900;
+}
+
+/* Results modal body overrides: show a scrollable list instead of centered large label */
+#wheel-root #results-modal .modal-title { text-align: center; }
+#wheel-root #results-modal .modal-body {
+  display: block;
+  text-align: left;
+  font: 400 14px/1.4 "Lato", sans-serif;
+  color: #ededed;
+  overflow: auto;
+}
+#wheel-root #results-table { width: 100%; border-collapse: collapse; }
+#wheel-root #results-table thead th { position: sticky; top: 0; background: #1c1f23; color: #ffffff; text-align: left; font: 700 14px/1.4 "Lato", sans-serif; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+#wheel-root #results-table tbody th { text-align: right; color: #ffffff; font: 700 14px/1.4 "Lato", sans-serif; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); width: 48px; }
+#wheel-root #results-table tbody td { color: #ededed; font: 400 14px/1.4 "Lato", sans-serif; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+
+#wheel-root #results-modal .modal-actions { justify-content: flex-end; gap: 12px; }
+
+#wheel-root #results-close,
+#wheel-root #results-clear {
+  background: #f7b71e;
+  color: #ffffff;
+  border: none;
+  padding: 10px 14px;
+  font: 900 14px/1 "Lato", sans-serif;
+  cursor: pointer;
+}
+
+/* Medium: shrink canvas sooner to avoid pushing Homebox */
+@media (max-width: 1500px) {
+  #wheel-root #spin_the_wheel { max-width: 80vw; }
+  #wheel-root #wheel {
+    width: min(80vw, 380px);
+    height: min(80vw, 380px);
+  }
+}
+
+/* Mobile sizing: make the wheel smaller on small screens */
+@media (max-width: 768px) {
+  #wheel-root #spin_the_wheel { max-width: 90vw; }
+  #wheel-root #wheel {
+    width: min(90vw, 340px);
+    height: min(90vw, 340px);
+  }
+}
+</style>
+
+<script is:inline>
+  (function initWheel() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initWheel, { once: true });
+      return;
+    }
+    const root = document.getElementById('wheel-root');
+    if (!root) return;
+
+    // Store recent results (most recent first)
+    const recentResults = [];
+    function formatTs(ts) {
+      try {
+        const d = new Date(ts);
+        return d.toLocaleString(undefined, {
+          year: 'numeric', month: 'short', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+      } catch (_) {
+        return '' + ts;
+      }
+    }
+    const MAX_RESULTS = 50;
+    function renderResults() {
+      const tbody = root.querySelector('#results-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      // Show oldest first, newest last; number by order of appearance
+      const chronological = recentResults.slice().reverse();
+      for (let i = 0; i < chronological.length; i++) {
+        const item = chronological[i];
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.scope = 'row';
+        th.textContent = String(i + 1);
+        const tdLabel = document.createElement('td');
+        tdLabel.textContent = item.label;
+        const tdTs = document.createElement('td');
+        tdTs.textContent = formatTs(item.ts);
+        tr.appendChild(th);
+        tr.appendChild(tdLabel);
+        tr.appendChild(tdTs);
+        tbody.appendChild(tr);
+      }
+    }
+    function addResult(label) {
+      if (!label) return;
+      recentResults.unshift({ label: String(label), ts: Date.now() });
+      if (recentResults.length > MAX_RESULTS) recentResults.length = MAX_RESULTS;
+      renderResults();
+    }
+
+    let sectors = [
+      { color: "#4C5938", text: "#FFFFFF", label: "Pizza" },
+      { color: "#8A8C3E", text: "#FFFFFF", label: "Tacos" },
+      { color: "#F28C0F", text: "#FFFFFF", label: "Burger" },
+      { color: "#F2790F", text: "#FFFFFF", label: "Sushi" },
+      { color: "#F2E0DC", text: "#333333", label: "Pasta" },
+      { color: "#4C5938", text: "#FFFFFF", label: "Salad" },
+      { color: "#8A8C3E", text: "#FFFFFF", label: "Sandwich" },
+      { color: "#F28C0F", text: "#FFFFFF", label: "Burrito" },
+    ];
+
+    const events = {
+      listeners: {},
+      addListener: function (eventName, fn) {
+        this.listeners[eventName] = this.listeners[eventName] || [];
+        this.listeners[eventName].push(fn);
+      },
+      fire: function (eventName, ...args) {
+        if (this.listeners[eventName]) {
+          for (let fn of this.listeners[eventName]) {
+            fn(...args);
+          }
+        }
+      },
+    };
+
+    const rand = (m, M) => Math.random() * (M - m) + m;
+    let tot = sectors.length;
+    const spinEl = root.querySelector('#spin');
+    const ctx = root.querySelector('#wheel').getContext('2d');
+    let dia = ctx.canvas.width;
+    let rad = dia / 2;
+    const baseCanvasSize = ctx.canvas.width; // remember default size (e.g., 500)
+    const PI = Math.PI;
+    const TAU = 2 * PI;
+    let arc = TAU / (tot || 1);
+
+    function recomputeDerived() {
+      tot = sectors.length;
+      arc = TAU / (tot || 1);
+    }
+
+    let friction = 0.991; // adjustable based on desired duration
+    let targetSpinDurationSec = 10; // default desired spin duration (seconds)
+    let angVel = 0; // Angular velocity
+    let ang = 0; // Angle in radians
+    const idleSpinSpeed = 0.0015; // Slow idle speed in radians per frame
+    let idlePauseUntil = 0; // hold idle spin after a result for a short time
+    let prevSectorIndex = null; // Track previous sector index for ticking
+
+    let spinButtonClicked = false;
+    let isSpinning = false;
+
+    const getIndex = () => tot ? (Math.floor(tot - (ang / TAU) * tot) % tot) : 0;
+
+    function drawSector(sector, i) {
+      const ang = arc * i;
+      ctx.save();
+
+      // COLOR
+      ctx.beginPath();
+      ctx.fillStyle = sector.color;
+      ctx.moveTo(rad, rad);
+      ctx.arc(rad, rad, rad, ang, ang + arc);
+      ctx.lineTo(rad, rad);
+      ctx.fill();
+
+      // TEXT
+      ctx.translate(rad, rad);
+      ctx.rotate(ang + arc / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = sector.text;
+      const labelFontPx = Math.max(16, Math.round(dia * 0.06));
+      ctx.font = `bold ${labelFontPx}px 'Lato', sans-serif`;
+      ctx.fillText(sector.label, rad - 10, 10);
+
+      ctx.restore();
+    }
+
+    function drawAllSectors() {
+      ctx.clearRect(0, 0, dia, dia);
+      for (let i = 0; i < sectors.length; i++) {
+        drawSector(sectors[i], i);
+      }
+    }
+
+    function rotate() {
+      // Always apply transform
+      ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+      if (!tot) {
+        // Empty state: neutral SPIN button styling
+        spinEl.textContent = 'SPIN';
+        spinEl.style.background = '#ffffff';
+        spinEl.style.color = '#212121';
+        return;
+      }
+      const sector = sectors[getIndex()];
+      spinEl.textContent = !angVel ? 'SPIN' : sector.label;
+      spinEl.style.background = sector.color;
+      spinEl.style.color = sector.text;
+    }
+
+    function frame() {
+      if (!angVel && spinButtonClicked) {
+        const finalSector = sectors[getIndex()];
+        events.fire('spinEnd', finalSector);
+        spinButtonClicked = false;
+        isSpinning = false;
+        // Pause idle movement briefly so the winner is clearly visible
+        idlePauseUntil = Date.now() + 3000; // 3s pause
+        return;
+      }
+
+      if (!angVel) {
+        // During pause window keep the wheel still
+        if (Date.now() < idlePauseUntil) {
+          rotate();
+          return;
+        }
+        // Idle spin when not actively spinning
+        ang = (ang + idleSpinSpeed) % TAU;
+        rotate();
+        prevSectorIndex = getIndex(); // Reset prevSectorIndex during idle
+        return;
+      }
+
+      angVel *= friction;
+      if (angVel < 0.002) angVel = 0;
+      ang += angVel;
+      ang %= TAU;
+      rotate();
+
+      // Play tick sound when passing a sector boundary
+      const currentSectorIndex = getIndex();
+      if (prevSectorIndex !== null && currentSectorIndex !== prevSectorIndex) {
+        const wheelSound = root.querySelector('#wheelSound');
+        if (wheelSound) {
+          wheelSound.currentTime = 0;
+          wheelSound.play();
+        }
+      }
+      prevSectorIndex = currentSectorIndex;
+    }
+
+    function engine() {
+      frame();
+      requestAnimationFrame(engine);
+    }
+
+    function recomputeCanvasDerived() {
+      dia = ctx.canvas.width;
+      rad = dia / 2;
+    }
+
+    function resizeCanvasTo(size) {
+      const s = Math.max(50, Math.floor(size));
+      if (ctx.canvas.width === s && ctx.canvas.height === s) return;
+      ctx.canvas.width = s;
+      ctx.canvas.height = s;
+      recomputeCanvasDerived();
+      drawAllSectors();
+      rotate();
+    }
+
+    function computeMaxFit() {
+      const paddingFactor = 0.95;
+      return Math.floor(Math.min(window.innerWidth, window.innerHeight) * paddingFactor);
+    }
+
+    function init() {
+      drawAllSectors();
+      rotate();
+      engine();
+      // Press effect handlers
+      spinEl.addEventListener('mousedown', () => {
+        spinEl.classList.add('pressed');
+      });
+      spinEl.addEventListener('touchstart', () => {
+        spinEl.classList.add('pressed');
+      });
+      function removePressed() {
+        spinEl.classList.remove('pressed');
+      }
+      spinEl.addEventListener('mouseup', removePressed);
+      spinEl.addEventListener('mouseleave', removePressed);
+      spinEl.addEventListener('touchend', removePressed);
+      spinEl.addEventListener('touchcancel', removePressed);
+      spinEl.addEventListener('click', () => {
+        if (isSpinning) return; // ignore re-clicks mid-spin
+        const spinClickSound = root.querySelector('#spinClickSound');
+        if (spinClickSound) {
+          spinClickSound.currentTime = 0;
+          spinClickSound.play();
+        }
+        setTimeout(() => {
+          const wheelSound = root.querySelector('#wheelSound');
+          if (wheelSound) {
+            wheelSound.currentTime = 0;
+            wheelSound.play();
+          }
+          // Compute friction for the requested duration using geometric decay model
+          const threshold = 0.002; // same stop threshold used in frame()
+          const frames = Math.max(1, Math.round(targetSpinDurationSec * 60));
+          // Choose a base initial velocity and derive friction so it decays to threshold in N frames
+          const angVel0 = rand(0.25, 0.45);
+          const computedFriction = Math.exp(Math.log(threshold / angVel0) / frames);
+          // Constrain friction to safe bounds
+          friction = Math.min(0.9999, Math.max(0.90, computedFriction));
+          angVel = angVel0;
+          spinButtonClicked = true;
+          isSpinning = true;
+        }, 300);
+      });
+    }
+
+    init();
+
+    // Palette + accessibility helpers
+    let palette = ["#4C5938", "#8A8C3E", "#F28C0F", "#F2790F", "#F2E0DC"];
+    function getTextColor(bgHex) {
+      if (!bgHex) return '#FFFFFF';
+      const hex = bgHex.replace('#', '');
+      const bigint = parseInt(hex.length === 3 ? hex.split('').map(c => c + c).join('') : hex, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 180 ? '#333333' : '#FFFFFF';
+    }
+    window.addEventListener('wheel:updateNames', (e) => {
+      const incoming = (e && e.detail && Array.isArray(e.detail.names)) ? e.detail.names : null;
+      if (!incoming) return;
+      // Replace sectors with incoming names
+      sectors = incoming.map((label, i) => {
+        const color = palette[i % palette.length];
+        const text = getTextColor(color);
+        return { color, text, label: String(label) };
+      });
+      recomputeDerived();
+      // Reset wheel state and redraw
+      angVel = 0;
+      ang = 0;
+      drawAllSectors();
+      rotate();
+    });
+
+    // Settings: spin duration and volumes
+    (function initSettingsListener() {
+      let targetDurationSec = 10; // default
+      let wheelVol = 0.8;
+      let tadaVol = 0.8;
+      const wheelSoundEl = root.querySelector('#wheelSound');
+      const resultSoundEl = root.querySelector('#resultSound');
+      if (wheelSoundEl) wheelSoundEl.volume = wheelVol;
+      if (resultSoundEl) resultSoundEl.volume = tadaVol;
+
+      window.addEventListener('wheel:updateSettings', (e) => {
+        const d = e && e.detail ? e.detail : {};
+        if (typeof d.durationSec === 'number') {
+          targetDurationSec = d.durationSec;
+          targetSpinDurationSec = targetDurationSec;
+        }
+        if (typeof d.wheelVol === 'number' && wheelSoundEl) {
+          wheelVol = Math.max(0, Math.min(1, d.wheelVol));
+          wheelSoundEl.volume = wheelVol;
+        }
+        if (typeof d.tadaVol === 'number' && resultSoundEl) {
+          tadaVol = Math.max(0, Math.min(1, d.tadaVol));
+          resultSoundEl.volume = tadaVol;
+        }
+      });
+    })();
+
+    // Apply selected palette from Themes modal
+    window.addEventListener('wheel:updatePalette', (e) => {
+      const incoming = (e && e.detail && Array.isArray(e.detail.colors)) ? e.detail.colors : null;
+      if (!incoming || incoming.length === 0) return;
+      palette = incoming.slice();
+      // Recolor existing sectors, keep labels
+      sectors = sectors.map((sector, i) => {
+        const color = palette[i % palette.length] || sector.color;
+        const text = getTextColor(color);
+        return { ...sector, color, text };
+      });
+      recomputeDerived();
+      angVel = 0;
+      drawAllSectors();
+      rotate();
+    });
+
+    // Reset wheel to defaults on global New action
+    window.addEventListener('wheel:new', () => {
+      // Default theme palette
+      palette = ["#4C5938", "#8A8C3E", "#F28C0F", "#F2790F", "#F2E0DC"];
+      // Clear sectors and reset state
+      sectors = [];
+      recomputeDerived();
+      angVel = 0;
+      ang = 0;
+      drawAllSectors();
+      rotate();
+    });
+
+    // Toggle fullscreen only for the wheel component
+    function isFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    }
+    function requestFs(el) {
+      if (el.requestFullscreen) return el.requestFullscreen();
+      if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+      if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
+      if (el.msRequestFullscreen) return el.msRequestFullscreen();
+    }
+    function exitFs() {
+      if (document.exitFullscreen) return document.exitFullscreen();
+      if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+      if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+      if (document.msExitFullscreen) return document.msExitFullscreen();
+    }
+
+    window.addEventListener('wheel:toggleFullscreen', async () => {
+      const rootEl = document.getElementById('wheel-root');
+      if (!rootEl) return;
+      try {
+        if (!isFullscreen()) {
+          rootEl.classList.add('fullscreen');
+          await requestFs(rootEl);
+          // Make wheel 4x larger than base, but cap to viewport
+          const targetSize = Math.min(baseCanvasSize * 4, computeMaxFit());
+          resizeCanvasTo(targetSize);
+        } else {
+          await exitFs();
+        }
+      } catch (err) {
+        console.error('Fullscreen toggle failed', err);
+      }
+    });
+
+    // Keep CSS class in sync with fullscreen state changes (e.g., ESC to exit)
+    document.addEventListener('fullscreenchange', () => {
+      const rootEl = document.getElementById('wheel-root');
+      if (!rootEl) return;
+      if (document.fullscreenElement === rootEl) {
+        rootEl.classList.add('fullscreen');
+        // Ensure canvas fits viewport while honoring 4x intent
+        const targetSize = Math.min(baseCanvasSize * 4, computeMaxFit());
+        resizeCanvasTo(targetSize);
+      } else {
+        rootEl.classList.remove('fullscreen');
+        // Restore to base size when exiting fullscreen
+        resizeCanvasTo(baseCanvasSize);
+      }
+    });
+
+    // Load canvas-confetti from CDN if not present
+    function loadConfetti() {
+      return new Promise((resolve) => {
+        if (typeof window.confetti === 'function') return resolve();
+        const existing = document.querySelector('script[data-confetti-cdn]');
+        if (existing) {
+          existing.addEventListener('load', () => resolve());
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+        s.async = true;
+        s.setAttribute('data-confetti-cdn', '');
+        s.onload = () => resolve();
+        document.head.appendChild(s);
+      });
+    }
+
+    // Confetti control (loop until closed)
+    let confettiRunning = false;
+    let snowRAFId = 0;
+    let fireworksIntervalId = 0;
+
+    // Create a renderer bound to a canvas inside #wheel-root so it works in fullscreen
+    let confettiRenderer = null;
+    function getConfettiRenderer() {
+      if (typeof window.confetti !== 'function') return null;
+      if (confettiRenderer) return confettiRenderer;
+      const canvas = document.createElement('canvas');
+      canvas.id = 'wheel-confetti';
+      canvas.style.position = 'absolute';
+      canvas.style.inset = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '1001';
+      root.appendChild(canvas);
+      confettiRenderer = window.confetti.create(canvas, { resize: true, useWorker: true });
+      return confettiRenderer;
+    }
+
+    function getFullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+    }
+    function isWheelFullscreen() {
+      return getFullscreenElement() === root;
+    }
+
+    function startConfetti() {
+      confettiRunning = true;
+      startSnowLoop();
+      startFireworksLoop();
+    }
+
+    function stopConfetti() {
+      confettiRunning = false;
+      if (snowRAFId) cancelAnimationFrame(snowRAFId);
+      snowRAFId = 0;
+      if (fireworksIntervalId) clearInterval(fireworksIntervalId);
+      fireworksIntervalId = 0;
+    }
+
+    // Snow confetti effect (looping)
+    function startSnowLoop() {
+      let skew = 1;
+      function randInRange(min, max) { return Math.random() * (max - min) + min; }
+      function frame() {
+        if (!confettiRunning) return;
+        const ticks = 300; // stable gentle fall
+        skew = Math.max(0.8, skew - 0.001);
+        const c = isWheelFullscreen() ? getConfettiRenderer() : (typeof window.confetti === 'function' ? window.confetti : null);
+        if (!c) { snowRAFId = requestAnimationFrame(frame); return; }
+        c({
+          particleCount: 1,
+          startVelocity: 0,
+          ticks,
+          origin: { x: Math.random(), y: (Math.random() * skew) - 0.2 },
+          colors: ['#ffffff'],
+          shapes: ['circle'],
+          gravity: randInRange(0.4, 0.6),
+          scalar: randInRange(0.4, 1),
+          drift: randInRange(-0.4, 0.4),
+          zIndex: 1001
+        });
+        snowRAFId = requestAnimationFrame(frame);
+      }
+      frame();
+    }
+
+    // Fireworks confetti effect (looping)
+    function startFireworksLoop() {
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1001 };
+      function randInRange(min, max) { return Math.random() * (max - min) + min; }
+      if (fireworksIntervalId) clearInterval(fireworksIntervalId);
+      fireworksIntervalId = setInterval(function () {
+        if (!confettiRunning) return;
+        const c = isWheelFullscreen() ? getConfettiRenderer() : (typeof window.confetti === 'function' ? window.confetti : null);
+        if (!c) return;
+        const particleCount = 50;
+        c({ ...defaults, particleCount, origin: { x: randInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+        c({ ...defaults, particleCount, origin: { x: randInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+      }, 250);
+    }
+
+    events.addListener('spinEnd', (sector) => {
+      const overlay = root.querySelector('#win-modal');
+      const labelEl = root.querySelector('#win-modal-label');
+      if (labelEl) labelEl.textContent = sector.label;
+      if (overlay) overlay.classList.add('open');
+      // Play result sound
+      const resultSound = root.querySelector('#resultSound');
+      if (resultSound) {
+        resultSound.currentTime = 0;
+        resultSound.play();
+      }
+      // Track in results history and refresh list
+      addResult(sector.label);
+      // Dispatch result event for counters
+      window.dispatchEvent(new CustomEvent('wheel:result', { detail: { label: sector.label } }));
+      // Trigger confetti loops (stop when modal closes)
+      loadConfetti().then(() => {
+        startConfetti();
+      });
+    });
+
+    // Modal close interactions
+    const overlay = root.querySelector('#win-modal');
+    const closeBtn = root.querySelector('#win-modal-close');
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          stopConfetti();
+          overlay.classList.remove('open');
+        }
+      });
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        stopConfetti();
+        if (overlay) overlay.classList.remove('open');
+      });
+    }
+    // Results modal interactions
+    const resultsBtn = root.querySelector('#results-btn');
+    const resultsOverlay = root.querySelector('#results-modal');
+    const resultsClose = root.querySelector('#results-close');
+    const resultsClear = root.querySelector('#results-clear');
+    function openResults() {
+      renderResults();
+      if (resultsOverlay) {
+        resultsOverlay.classList.add('open');
+        resultsOverlay.setAttribute('aria-hidden', 'false');
+      }
+    }
+    function closeResults() {
+      if (resultsOverlay) {
+        resultsOverlay.classList.remove('open');
+        resultsOverlay.setAttribute('aria-hidden', 'true');
+      }
+    }
+    if (resultsBtn) {
+      resultsBtn.addEventListener('click', openResults);
+    }
+    if (resultsOverlay) {
+      resultsOverlay.addEventListener('click', (e) => {
+        if (e.target === resultsOverlay) closeResults();
+      });
+    }
+    if (resultsClose) {
+      resultsClose.addEventListener('click', closeResults);
+    }
+    if (resultsClear) {
+      resultsClear.addEventListener('click', () => {
+        recentResults.splice(0, recentResults.length);
+        renderResults();
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      // Spin wheel: CMD+Enter (Mac) or Win+Enter (Windows)
+      const isCmdEnter = e.key === 'Enter' && (e.metaKey || e.ctrlKey);
+      const isWinEnter = e.key === 'Enter' && e.getModifierState && e.getModifierState('OS');
+      if ((isCmdEnter || isWinEnter) && !isSpinning) {
+        spinEl.classList.add('pressed');
+        setTimeout(() => {
+          spinEl.classList.remove('pressed');
+          spinEl.click();
+        }, 120);
+      }
+      // Close popup: Enter when modal is open
+      const overlay = root.querySelector('#win-modal');
+      if (e.key === 'Enter' && overlay && overlay.classList.contains('open')) {
+        stopConfetti();
+        overlay.classList.remove('open');
+      }
+      // Close popup: ESC when modal is open
+      if (e.key === 'Escape' && overlay && overlay.classList.contains('open')) {
+        stopConfetti();
+        overlay.classList.remove('open');
+      }
+      // Results modal keyboard closes
+      const rOverlay = root.querySelector('#results-modal');
+      if (e.key === 'Escape' && rOverlay && rOverlay.classList.contains('open')) {
+        closeResults();
+      }
+      if (e.key === 'Enter' && rOverlay && rOverlay.classList.contains('open')) {
+        closeResults();
+      }
+    });
+  })();
+</script>
+
+

@@ -1,0 +1,53 @@
+{
+  "site": {
+    "title": "Ruleta del juego Astro",
+    "description": "Juego de la ruleta"
+  },
+  "home": {
+    "title": "¡Bienvenido al juego!"
+  },
+  "nav": {
+    "link1": "Enlace 1",
+    "link2": "Enlace 2",
+    "settings": "Ajustes",
+    "themes": "Temas",
+    "link3": "Enlace 3",
+    "link4": "Enlace 4"
+  },
+  "common": {
+    "close": "Cerrar",
+    "save": "Guardar",
+    "reset": "Restablecer",
+    "duplicate": "Duplicar",
+    "delete": "Eliminar"
+  },
+  "themes": {
+    "title": "Elige un tema"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "spinDuration": "Duración de giro",
+    "wheelSoundVolume": "Volumen de la rueda",
+    "tadaSoundVolume": "Volumen de Tada"
+  },
+  "homebox": {
+    "title": "Entradas de la ruleta",
+    "quantity": "Cantidad",
+    "placeholder": "Introduce texto aquí",
+    "editName": "Editar nombre"
+  },
+  "wheel": {
+    "spin": "GIRAR"
+  },
+  "pages": {
+    "about": {
+      "title": "Acerca de"
+    },
+    "privacy": {
+      "title": "Política de privacidad"
+    },
+    "terms": {
+      "title": "Términos y condiciones"
+    }
+  }
+}

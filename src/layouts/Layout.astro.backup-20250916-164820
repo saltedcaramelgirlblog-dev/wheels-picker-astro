@@ -1,28 +1,24 @@
----
-import Navbar from '../components/navbar.astro';
-import Footer from '../components/footer.astro';
-import { GoogleTagmanagerPartytown } from '@digi4care/astro-google-tagmanager';
-import { Seo } from 'astro-seo-meta';
-const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
-const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
----
 <!doctype html>
 <html lang="en">
 	<head>
-		{GTM_ID ? <GoogleTagmanagerPartytown id={GTM_ID} /> : null}
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<Seo
-			title="Wheels Picker – Free and easy-to-use random picker."
-			description="Create and spin wheels to pick random winners, options, and decisions quickly. Free, simple, and mobile-friendly."
-			icon="/favicon.svg"
-		/>
+		<title>Astro Basics</title>
 	</head>
 	<body>
     <div class="container">
-        <Navbar />
+        <div class="nav-bar">
+			<nav class="nav-container">
+				<ul class="nav-links">
+					<li><a href="#" class="nav-link">Link 1</a></li>
+					<li><a href="#" class="nav-link">Link 2</a></li>
+					<li><a href="#" class="nav-link" id="settings-link">Settings</a></li>
+					<li><a href="#" class="nav-link" id="themes-link">Themes</a></li>
+				</ul>
+			</nav>
+        </div>
         <div class="sidebar-1"></div>
         <div class="sidebar-2"></div>
         <div class="game-area">
@@ -40,7 +36,16 @@ const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
             </div>
             <div class="main-content-right"></div>
         </div>
-        <Footer />
+        <div class="footer">
+          <nav class="footer-nav">
+            <ul class="nav-links">
+              <li><a href="#" class="nav-link">Link 1</a></li>
+              <li><a href="#" class="nav-link">Link 2</a></li>
+              <li><a href="#" class="nav-link">Link 3</a></li>
+              <li><a href="#" class="nav-link">Link 4</a></li>
+            </ul>
+          </nav>
+        </div>
     </div>
 
     <!-- Themes Modal -->
@@ -292,24 +297,6 @@ const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
     })();
     </script>
     <script is:inline>
-    (function initGlobalNavActions() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initGlobalNavActions, { once: true });
-            return;
-        }
-        const fsLink = document.getElementById('fullscreen-link');
-        const newLink = document.getElementById('new-link');
-        if (fsLink) fsLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.dispatchEvent(new CustomEvent('wheel:toggleFullscreen'));
-        });
-        if (newLink) newLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.dispatchEvent(new CustomEvent('wheel:new'));
-        });
-    })();
-    </script>
-    <script is:inline>
     (function initThemesModal() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initThemesModal, { once: true });
@@ -504,21 +491,6 @@ const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
         font-weight: 700; /* font-bold */
         color: #ffffff; /* dark:text-white */
         margin: 0 0 0.5em 0;
-        scroll-margin-top: 80px;
-    }
-
-    /* Center images coming from Markdown without affecting text */
-    :global(.main-content-body p > img:only-child) {
-        display: block;
-        margin: 1rem auto;
-        max-width: 100%;
-        height: auto;
-    }
-    :global(.main-content-body p > a:only-child > img) {
-        display: block;
-        margin: 1rem auto;
-        max-width: 100%;
-        height: auto;
     }
 
     /* Add top padding to the first Markdown heading */
@@ -674,51 +646,5 @@ const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
     #settings-modal .setting { display: grid; gap: 8px; }
     #settings-modal label { color: #ffffff; font-size: 14px; }
     #settings-modal input[type="range"] { width: 100%; }
-
-    /* Mobile layout: navbar → game-area-main → main-content-body → footer */
-    @media (max-width: 768px) {
-        .container {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto auto auto auto;
-            grid-template-areas:
-            "nav-bar"
-            "game-area"
-            "main-content"
-            "footer";
-        }
-
-        .sidebar-1,
-        .sidebar-2 { display: none; }
-
-        .game-area {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto;
-            grid-template-areas:
-            "game-area-main";
-        }
-        .game-area-head,
-        .game-area-footer { display: none; }
-        .game-area-main {
-            padding: 12px;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            justify-items: center;
-        }
-        .game-area-main-left { display: grid; place-items: center; }
-        /* right side already centers via desktop rule; keep it centered on mobile */
-        .game-area-main-right { display: grid; place-items: center; }
-
-        .main-content {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto;
-            grid-template-areas:
-            "main-content-body";
-        }
-        .main-content-left,
-        .main-content-right { display: none; }
-
-        /* Ensure no overlap and proper spacing */
-        .main-content-body { padding: 12px; }
-    }
 
 </style>
