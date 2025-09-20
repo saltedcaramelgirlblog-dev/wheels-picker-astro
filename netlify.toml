@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Redirects (optional): ensure clean URLs
+[[redirects]]
+  from = "/tools"
+  to = "/tools/"
+  status = 301
+
+
