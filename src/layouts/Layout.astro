@@ -14,6 +14,7 @@ const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
+		<link rel="canonical" href={`https://wheelspicker.com${Astro.url.pathname}${Astro.url.search || ''}`} />
 		<Seo
 			title="Wheels Picker – Free and easy-to-use random picker."
 			description="Create and spin wheels to pick random winners, options, and decisions quickly. Free, simple, and mobile-friendly."
