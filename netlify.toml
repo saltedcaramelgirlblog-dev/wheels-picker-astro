@@ -13,3 +13,9 @@
 
 
 
+[[redirects]]
+  from = "https://wheelspicker.com/*"
+  to = "https://spinnawheel.com/:splat"
+  status = 301
+  force = true
+
