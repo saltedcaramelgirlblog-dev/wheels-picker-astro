@@ -16,10 +16,19 @@ const GTM_DOMAIN = import.meta.env.PUBLIC_GTM_DOMAIN;
 		<meta name="generator" content={Astro.generator} />
 		<link rel="canonical" href={`https://spinnawheel.com${Astro.url.pathname}${Astro.url.search || ''}`} />
 		<Seo
-			title="Wheels Picker – Free and easy-to-use random picker."
+			title="Spinn a Wheel – Free and easy-to-use random picker."
 			description="Create and spin wheels to pick random winners, options, and decisions quickly. Free, simple, and mobile-friendly."
 			icon="/favicon.svg"
 		/>
+		<!-- Google tag (gtag.js) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-8NZQCYL06J"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-8NZQCYL06J');
+		</script>
 	</head>
 	<body>
     <div class="container">
